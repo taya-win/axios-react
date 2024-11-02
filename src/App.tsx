@@ -6,12 +6,13 @@ export default function App() {
     const [users, setUsers] = useState<User[]>([]);
     const [error, setError] = useState("");
     const [isLoading, setLoading] = useState(false);
+    const [name, setName] = useState("");
 
     useEffect(() => {
         const controller = new AbortController();
 
         setLoading(true);
-        axios.get<User[]>('http://localhost:3000/users', {signal: controller.signal})
+        axios.get<User[]>('https://jsonplaceholder.typicode.com/users', {signal: controller.signal})
             .then(res => {
                 setUsers(res.data);
                 setLoading(false);
@@ -29,7 +30,23 @@ export default function App() {
         const originalUsers = [...users];
         setUsers(users.filter(u => u.id !== user.id));
 
-        axios.delete('http://localhost:3000/users/' + user.id)
+        axios.delete('https://jsonplaceholder.typicode.com/users/' + user.id)
+            .catch(err => {
+                setError(err.message);
+                setUsers(originalUsers);
+            });
+    };
+
+    const addUser = () => {
+        const originalUsers = [...users];
+        const newUser: User = {id: users.length + 1, name};
+        setUsers([...users, newUser]);
+
+        axios.post('https://jsonplaceholder.typicode.com/users', newUser)
+            .then(res => {
+                setUsers([...users, res.data]);
+                setName("");
+            })
             .catch(err => {
                 setError(err.message);
                 setUsers(originalUsers);
@@ -39,6 +56,10 @@ export default function App() {
     return <div className="p-5">
         {error && <p className="text-danger">{error}</p>}
         {isLoading && (<div className="spinner-border"></div>)}
+        <div className="d-flex mb-3">
+            <input required value={name} type="text" className="form-control me-3" onChange={(e) => setName(e.target.value)}/>
+            <button className="btn btn-primary" onClick={addUser}>Add</button>
+        </div>
         <ul className="list-group">
             {users.map((user: User) => <li key={user.id} className="list-group-item d-flex justify-content-between">
                 {user.name}
