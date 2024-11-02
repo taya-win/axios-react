@@ -25,11 +25,25 @@ export default function App() {
         return () => controller.abort();
     }, []);
 
-    return <>
+    const deleteUser = (user: User) => {
+        const originalUsers = [...users];
+        setUsers(users.filter(u => u.id !== user.id));
+
+        axios.delete('http://localhost:3000/users/' + user.id)
+            .catch(err => {
+                setError(err.message);
+                setUsers(originalUsers);
+            });
+    };
+
+    return <div className="p-5">
         {error && <p className="text-danger">{error}</p>}
         {isLoading && (<div className="spinner-border"></div>)}
-        <ul>
-            {users.map((user: User) => <li key={user.id}>{user.name}</li>)}
+        <ul className="list-group">
+            {users.map((user: User) => <li key={user.id} className="list-group-item d-flex justify-content-between">
+                {user.name}
+                <button className="btn btn-outline-danger" onClick={() => deleteUser(user)}>Delete</button>
+            </li>)}
         </ul>
-    </>;
+    </div>;
 }
