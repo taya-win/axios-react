@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import axios from "axios";
+import axios, {CanceledError} from "axios";
 import User from "./User.ts";
 
 export default function App() {
@@ -7,9 +7,15 @@ export default function App() {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        axios.get<User[]>('http://localhost:3000/xusers')
+        const controller = new AbortController();
+        axios.get<User[]>('http://localhost:3000/users', {signal: controller.signal})
             .then(res => setUsers(res.data))
-            .catch(err => setError(err.message));
+            .catch(err => {
+                if(err instanceof CanceledError) return;
+                setError(err.message);
+            });
+
+        return () => controller.abort();
     }, []);
 
     return <>
