@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
-import axios, {CanceledError} from "axios";
 import User from "./User.ts";
+import apiClient, {CanceledError} from "./services/api-client.ts";
 
 export default function App() {
     const [users, setUsers] = useState<User[]>([]);
@@ -12,7 +12,7 @@ export default function App() {
         const controller = new AbortController();
 
         setLoading(true);
-        axios.get<User[]>('https://jsonplaceholder.typicode.com/users', {signal: controller.signal})
+        apiClient.get<User[]>('/users', {signal: controller.signal})
             .then(res => {
                 setUsers(res.data);
                 setLoading(false);
@@ -30,7 +30,7 @@ export default function App() {
         const originalUsers = [...users];
         setUsers(users.filter(u => u.id !== user.id));
 
-        axios.delete('https://jsonplaceholder.typicode.com/users/' + user.id)
+        apiClient.delete('/users/' + user.id)
             .catch(err => {
                 setError(err.message);
                 setUsers(originalUsers);
@@ -42,7 +42,7 @@ export default function App() {
         const newUser: User = {id: users.length + 1, name};
         setUsers([...users, newUser]);
 
-        axios.post('https://jsonplaceholder.typicode.com/users', newUser)
+        apiClient.post('/users', newUser)
             .then(res => {
                 setUsers([...users, res.data]);
                 setName("");
@@ -55,10 +55,10 @@ export default function App() {
 
     const updateUser = (user: User) => {
         const originalUsers = [...users];
-        const updatedUser = {...users, name: user.name + " Updated!"};
+        const updatedUser = {...user, name: user.name + " Updated!"};
         setUsers(users.map(u => u.id == user.id ? updatedUser : u) as User[]);
 
-        axios.patch("https://jsonplaceholder.typicode.com/users/" + user.id, updatedUser)
+        apiClient.patch("/users/" + user.id, updatedUser)
         .catch(err => {
             setError(err.message);
             setUsers(originalUsers);
