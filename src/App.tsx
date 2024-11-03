@@ -1,29 +1,9 @@
-import {useEffect, useState} from "react";
 import User from "./User.ts";
 import userService from "./services/user-service.ts";
-import {CanceledError} from "./services/api-client.ts";
+import useUsers from "./hooks/useUsers.ts";
 
 export default function App() {
-    const [users, setUsers] = useState<User[]>([]);
-    const [error, setError] = useState("");
-    const [isLoading, setLoading] = useState(false);
-    const [name, setName] = useState("");
-
-    useEffect(() => {
-        setLoading(true);
-        const {request, cancel} = userService.getAll<User[]>();
-        request
-            .then(res => {
-            setUsers(res.data);
-            setLoading(false);
-            })
-            .catch(err => {
-                if(err instanceof CanceledError) return;
-                setError(err.message);
-                setLoading(false);
-            })
-        return () => cancel();
-    }, []);
+    const {users, setUsers, name, setName, isLoading, error, setError} = useUsers();
 
     const deleteUser = (user: User) => {
         const originalUsers = [...users];
@@ -38,7 +18,7 @@ export default function App() {
 
     const addUser = () => {
         const originalUsers = [...users];
-        const newUser: User = {id: users.length + 1, name};
+        const newUser: User = {id: Math.random(), name};
         setUsers([...users, newUser]);
 
         userService.create(newUser)
