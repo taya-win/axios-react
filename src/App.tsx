@@ -11,7 +11,7 @@ export default function App() {
 
     useEffect(() => {
         setLoading(true);
-        const {request, cancel} = userService.getAllUsers();
+        const {request, cancel} = userService.getAll<User[]>();
         request
             .then(res => {
             setUsers(res.data);
@@ -29,7 +29,7 @@ export default function App() {
         const originalUsers = [...users];
         setUsers(users.filter(u => u.id !== user.id));
 
-        userService.deleteUser(user.id)
+        userService.delete(user.id)
             .catch(err => {
                 setError(err.message);
                 setUsers(originalUsers);
@@ -41,7 +41,7 @@ export default function App() {
         const newUser: User = {id: users.length + 1, name};
         setUsers([...users, newUser]);
 
-        userService.createUser(newUser)
+        userService.create(newUser)
             .then(res => {
                 setUsers([...users, res.data]);
                 setName("");
